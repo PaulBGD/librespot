@@ -38,6 +38,8 @@ pub struct SessionInternal {
     handle: Remote,
 
     session_id: usize,
+
+    offline: bool,
 }
 
 static SESSION_COUNTER : AtomicUsize = ATOMIC_USIZE_INIT;
@@ -117,6 +119,8 @@ impl Session {
             handle: handle.remote().clone(),
 
             session_id: session_id,
+
+            offline: false,
         }));
 
         let sender_task = sender_rx

@@ -402,6 +402,7 @@ impl PlayerInternal {
 
     fn load_track(&self, track_id: SpotifyId, position: i64) -> Option<Decoder> {
         let track = Track::get(&self.session, track_id).wait().unwrap();
+        println!("Track: {:?}", track);
 
         info!("Loading track \"{}\"", track.name);
 

@@ -2,12 +2,14 @@ extern crate librespot;
 extern crate tokio_core;
 
 use std::env;
+use std::path::PathBuf;
 use tokio_core::reactor::Core;
 
 use librespot::core::authentication::Credentials;
 use librespot::core::config::{PlayerConfig, SessionConfig};
 use librespot::core::session::Session;
 use librespot::core::util::SpotifyId;
+use librespot::core::cache::Cache;
 
 use librespot::audio_backend;
 use librespot::player::Player;
@@ -22,6 +24,7 @@ fn main() {
     let args : Vec<_> = env::args().collect();
     if args.len() != 4 {
         println!("Usage: {} USERNAME PASSWORD TRACK", args[0]);
+        return
     }
     let username = args[1].to_owned();
     let password = args[2].to_owned();
@@ -32,7 +35,10 @@ fn main() {
     let backend = audio_backend::find(None).unwrap();
 
     println!("Connecting ..");
-    let session = core.run(Session::connect(session_config, credentials, None, handle)).unwrap();
+    let session = core.run(Session::connect(session_config,
+                                            credentials,
+                                            Some(Cache::new(PathBuf::from("cache"), true, true)),
+                                            handle)).unwrap();
 
     let player = Player::new(player_config, session.clone(), None, move || (backend)(None));
 

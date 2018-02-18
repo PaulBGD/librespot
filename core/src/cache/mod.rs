@@ -9,16 +9,19 @@ use authentication::Credentials;
 pub struct Cache {
     root: PathBuf,
     use_audio_cache: bool,
+    use_data_cache: bool,
 }
 
 impl Cache {
-    pub fn new(location: PathBuf, use_audio_cache: bool) -> Cache {
+    pub fn new(location: PathBuf, use_audio_cache: bool, use_data_cache: bool) -> Cache {
         mkdir_existing(&location).unwrap();
         mkdir_existing(&location.join("files")).unwrap();
+        mkdir_existing(&location.join("data")).unwrap();
 
         Cache {
             root: location,
-            use_audio_cache: use_audio_cache
+            use_audio_cache: use_audio_cache,
+            use_data_cache: use_data_cache
         }
     }
 }
@@ -49,9 +52,29 @@ impl Cache {
         File::open(self.file_path(file)).ok()
     }
 
+    fn data_path(&self, file: FileId) -> PathBuf {
+        let name = file.to_base16();
+        self.root.join("data").join(&name[0..2]).join(&name[2..])
+    }
+
+    pub fn data(&self, file: FileId) -> Option<File> {
+        File::open(self.data_path(file)).ok()
+    }
+
     pub fn save_file(&self, file: FileId, contents: &mut Read) {
         if self.use_audio_cache {
             let path = self.file_path(file);
+
+            mkdir_existing(path.parent().unwrap()).unwrap();
+
+            let mut cache_file = File::create(path).unwrap();
+            ::std::io::copy(contents, &mut cache_file).unwrap();
+        }
+    }
+
+    pub fn save_data(&self, file: FileId, contents: &mut Read) {
+        if self.use_data_cache {
+            let path = self.data_path(file);
 
             mkdir_existing(path.parent().unwrap()).unwrap();
 

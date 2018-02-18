@@ -8,6 +8,7 @@ use version;
 pub struct SessionConfig {
     pub user_agent: String,
     pub device_id: String,
+    pub allow_offline: bool,
 }
 
 impl Default for SessionConfig {
@@ -16,6 +17,7 @@ impl Default for SessionConfig {
         SessionConfig {
             user_agent: version::version_string(),
             device_id: device_id,
+            allow_offline: true
         }
     }
 }
